@@ -18,7 +18,8 @@
                             @click="handleModalDismiss">
                         取消
                     </button>
-                    <button type="button" class="btn btn-danger del-btn" @click="deleteProduct" autofocus>
+                    <button type="button" class="btn btn-danger del-btn" data-bs-dismiss="modal" @click="deleteProduct"
+                            autofocus>
                         確認刪除
                     </button>
                 </div>
