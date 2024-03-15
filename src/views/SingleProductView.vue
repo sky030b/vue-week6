@@ -46,6 +46,10 @@
 </template>
 
 <script>
+import { toast } from 'vue3-toastify'
+const successDelay = 1500;
+const errorOrWarnDelay = 2000;
+
 export default {
     data() {
         return {
@@ -73,12 +77,12 @@ export default {
                 const res = await this.axios.get(`${this.api.url}/api/${this.api.path}/product/${id}`);
                 this.productTemp = res.data.product;
             } catch (error) {
-                alert(error.response.data.message);
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
             }
             this.loadingStatus.id = '';
             this.isLoading = false;
-
-            console.log(this.productTemp.content)
         },
         async addToCart(id, qty = 1) {
             this.isLoading = true;
@@ -91,9 +95,13 @@ export default {
 
             try {
                 const res = await this.axios.post(`${this.api.url}/api/${this.api.path}/cart`, { data: cart });
-                alert(res.data.message);
+                toast.success(res.data.message, {
+                    autoClose: successDelay,
+                });
             } catch (error) {
-                alert(error.response.data.message);
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
             }
 
             this.loadingStatus.id = '';

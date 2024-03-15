@@ -15,8 +15,8 @@ import VueAxios from 'vue-axios'
 import LoadingVue from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/css/index.css'
 
-import Vue3Toastify, { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
+import Vue3Toastify, { toast } from 'vue3-toastify'
+import 'vue3-toastify/dist/index.css'
 
 import * as VeeValidate from 'vee-validate'
 import * as VeeValidateRules from '@vee-validate/rules'
@@ -24,7 +24,7 @@ import * as VeeValidateI18n from '@vee-validate/i18n'
 import zhTW from '@/assets/VeeValidateI18n/zh_TW.json'
 
 Object.keys(VeeValidateRules).forEach(rule => {
-    VeeValidate.defineRule(rule, VeeValidateRules[rule]);
+    VeeValidate.defineRule(rule, VeeValidateRules[rule])
 });
 VeeValidate.configure({
     generateMessage: VeeValidateI18n.localize({ zh_TW: zhTW }),

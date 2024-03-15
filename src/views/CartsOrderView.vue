@@ -1,9 +1,10 @@
 <template>
+    <loadingVue :active="isLoading" />
+
     <div class="container">
         <!-- 購物車列表 -->
         <div class="text-end" v-if="cart.carts.length">
-            <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal"
-                    data-bs-target="#clearCarts">清空購物車</button>
+            <button class="btn btn-outline-danger" type="button" @click="confirmDeleteAllCarts">清空購物車</button>
         </div>
         <div class="text-end" v-else>
             <button class="btn btn-outline-secondary" type="button" disabled>購物車內暫無商品</button>
@@ -143,6 +144,13 @@
 </template>
 
 <script>
+import modal from 'bootstrap/js/dist/modal'
+import { toast } from 'vue3-toastify'
+const successDelay = 1500;
+const errorOrWarnDelay = 2000;
+
+let clearCartsModal = null;
+
 export default {
     props: [],
     data() {
@@ -173,79 +181,116 @@ export default {
     },
     methods: {
         // api functions
-        getCart() {
+        async getCart() {
             this.isLoading = true;
-            this.axios.get(`${this.api.url}/api/${this.api.path}/cart`)
-                .then((res) => {
-                    this.cart = res.data.data;
-                    setTimeout(() => {
-                        this.isLoading = false;
-                    }, 600)
-                })
-                .catch((err) => {
-                    alert(err.response.data.message);
+
+            try {
+                const res = await this.axios.get(`${this.api.url}/api/${this.api.path}/cart`);
+                this.cart = res.data.data;
+            } catch (error) {
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
                 });
+            }
+
+            this.isLoading = false;
         },
-        updateCart(item) {
+        async updateCart(item) {
+            this.isLoading = true;
             this.loadingStatus.id = item.id;
+
             const data = {
                 "product_id": item.product_id,
                 "qty": item.qty
             }
-            this.axios.put(`${this.api.url}/api/${this.api.path}/cart/${item.id}`, { data })
-                .then((res) => {
-                    alert(res.data.message);
-                    this.loadingStatus.id = '';
-                    this.getCart();
-                }).catch((err) => {
-                    alert(err.response.data.message);
-                    this.loadingStatus.id = '';
+
+            try {
+                const res = await this.axios.put(`${this.api.url}/api/${this.api.path}/cart/${item.id}`, { data });
+                toast.success(res.data.message, {
+                    autoClose: successDelay,
                 });
+                await this.getCart();
+            } catch (error) {
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
+            }
+
+            this.loadingStatus.id = '';
+            this.isLoading = false;
         },
-        removeCartItem(id) {
+        async removeCartItem(id) {
+            this.isLoading = true;
             this.loadingStatus.deleteId = id;
-            this.axios.delete(`${this.api.url}/api/${this.api.path}/cart/${id}`)
-                .then((res) => {
-                    alert(res.data.message);
-                    this.loadingStatus.deleteId = "";
-                    this.getCart();
-                })
-                .catch((err) => {
-                    alert(err.response.data.message)
-                    this.loadingStatus.deleteId;
-                })
+
+            try {
+                const res = await this.axios.delete(`${this.api.url}/api/${this.api.path}/cart/${id}`);
+                toast.success(res.data.message, {
+                    autoClose: successDelay,
+                });
+                await this.getCart();
+            } catch (error) {
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
+            }
+
+            this.loadingStatus.deleteId = "";
+            this.isLoading = false;
         },
-        deleteAllCarts() {
-            this.axios.delete(`${this.api.url}/api/${this.api.path}/carts`)
-                .then((res) => {
-                    alert(res.data.message);
-                    this.getCart();
-                })
-                .catch((err) => {
-                    alert(err.response.data.message)
-                })
+        async deleteAllCarts() {
+            this.isLoading = true;
+
+            try {
+                const res = await this.axios.delete(`${this.api.url}/api/${this.api.path}/carts`);
+                toast.success(res.data.message, {
+                    autoClose: successDelay,
+                });
+                await this.getCart();
+            } catch (error) {
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
+            }
+
+            this.isLoading = false;
         },
-        createOrder() {
+        async createOrder() {
             if (this.cart.carts.length === 0) {
-                alert("目前購物車為空，請先新增商品至購物車。")
+                toast.warn('目前購物車為空，\n請先新增商品至購物車。', {
+                    autoClose: errorOrWarnDelay,
+                });
                 return
             }
-            console.log(234234)
-            const order = this.form;
-            this.axios.post(`${this.api.url}/api/${this.api.path}/order`, { data: order })
-                .then((res) => {
-                    alert(res.data.message);
-                    this.$refs.form.resetForm();
-                    this.getCart();
-                })
-                .catch((err) => {
-                    alert(err.response.data.message);
+
+            this.isLoading = true;
+
+            try {
+                const res = await this.axios.post(`${this.api.url}/api/${this.api.path}/order`, { data: this.form });
+                toast.success(res.data.message, {
+                    autoClose: successDelay,
                 });
+                this.$refs.form.resetForm();
+                await this.getCart();
+            } catch (error) {
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
+            }
+
+            this.isLoading = false;
         },
 
+        confirmDeleteAllCarts() {
+            clearCartsModal.show();
+        },
         isPhone(value) {
             const phoneNumber = /^(09)[0-9]{8}$/;
             return phoneNumber.test(value) ? true : '需要正確的手機號碼。例如：0948723030'
+        },
+        init() {
+            this.getCart();
+            clearCartsModal = new modal(document.querySelector("#clearCarts"));
         }
     },
     watch: {
@@ -260,7 +305,7 @@ export default {
         }
     },
     mounted() {
-        this.getCart();
+        this.init();
     }
 }
 </script>

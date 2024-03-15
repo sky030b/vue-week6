@@ -159,6 +159,10 @@
 </template>
 
 <script>
+import { toast } from 'vue3-toastify'
+const successDelay = 1500;
+const errorOrWarnDelay = 2000;
+
 export default {
     props: ["handleModalDismiss", "productTemp"],
     data() {
@@ -207,16 +211,20 @@ export default {
             const imageInput = document.querySelector("#file-input-big");
             const formData = new FormData(form);
             if (imageInput.value) {
-                await this.axios.post(`${this.api.url}/api/${this.api.path}/admin/upload`, formData)
-                    .then((res) => {
-                        this.product.imageUrl = res.data.imageUrl;
-                        imageInput.value = '';
-                    })
-                    .catch(err => {
-                        alert(err.response.data.message);
-                    })
+                try {
+                    const res = await this.axios.post(`${this.api.url}/api/${this.api.path}/admin/upload`, formData);
+                    this.product.imageUrl = res.data.imageUrl;
+                    imageInput.value = '';
+                } catch (error) {
+                    toast.error(error.response.data.message, {
+                        autoClose: errorOrWarnDelay,
+                    });
+
+                }
             } else {
-                alert("請先選擇欲上傳之圖片。");
+                toast.error("請先選擇欲上傳之圖片。", {
+                    autoClose: errorOrWarnDelay,
+                });
             }
         },
         async uploadSmallImage() {
@@ -224,20 +232,24 @@ export default {
             const imageInput = document.querySelector("#file-input-small");
             const formData = new FormData(form);
             if (imageInput.value) {
-                await this.axios.post(`${this.api.url}/api/${this.api.path}/admin/upload`, formData)
-                    .then((res) => {
-                        if (Object.prototype.hasOwnProperty.call(this.product, "imagesUrl")) {
-                            this.product.imagesUrl.push(res.data.imageUrl);
-                        } else {
-                            this.product.imagesUrl = [res.data.imageUrl];
-                        }
-                        imageInput.value = '';
-                    })
-                    .catch(err => {
-                        alert(err.response.data.message);
-                    })
+                try {
+                    const res = await this.axios.post(`${this.api.url}/api/${this.api.path}/admin/upload`, formData);
+                    if (Object.prototype.hasOwnProperty.call(this.product, "imagesUrl")) {
+                        this.product.imagesUrl.push(res.data.imageUrl);
+                    } else {
+                        this.product.imagesUrl = [res.data.imageUrl];
+                    }
+                    imageInput.value = '';
+                } catch (error) {
+                    toast.error(error.response.data.message, {
+                        autoClose: errorOrWarnDelay,
+                    });
+
+                }
             } else {
-                alert("請先選擇欲上傳之圖片。");
+                toast.error("請先選擇欲上傳之圖片。", {
+                    autoClose: errorOrWarnDelay,
+                });
             }
         },
 
@@ -245,26 +257,32 @@ export default {
             const data = {
                 data: this.product
             }
-            await this.axios.post(`${this.api.url}/api/${this.api.path}/admin/product/`, data)
-                .then(() => {
-                    alert("新增成功。");
-                })
-                .catch(err => {
-                    alert(`${err.response.data.message}`);
-                })
+            try {
+                await this.axios.post(`${this.api.url}/api/${this.api.path}/admin/product/`, data);
+                toast.success("新增成功。", {
+                    autoClose: successDelay,
+                });
+            } catch (error) {
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
+            }
         },
         async editProduct() {
             const data = {
                 data: this.product
             }
-            await this.axios.put(`${this.api.url}/api/${this.api.path}/admin/product/${this.productTemp.id}`, data)
-                .then(() => {
-                    alert("修改成功。");
-                })
-                .catch(err => {
-                    console.log(`${err}`);
-                    alert(`${err.response.data.message}`);
-                })
+            try {
+                await this.axios.put(`${this.api.url}/api/${this.api.path}/admin/product/${this.productTemp.id}`, data);
+                toast.success("修改成功。", {
+                    autoClose: successDelay,
+                });
+
+            } catch (error) {
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
+            }
         },
         // 送出 新增 或 編輯 的產品資料
         async submitAddOrEditProduct() {

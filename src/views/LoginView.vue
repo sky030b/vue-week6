@@ -34,8 +34,9 @@
 
 import { mapActions } from 'pinia'
 import memberStore from '@/stores/memberData'
-import { toast } from 'vue3-toastify';
-const delay = 1500;
+import { toast } from 'vue3-toastify'
+const successDelay = 1500;
+const errorOrWarnDelay = 2000;
 
 export default {
     data() {
@@ -53,17 +54,19 @@ export default {
     methods: {
         async login() {
             try {
-                toast.success('登入成功。', {
-                    autoClose: delay,
-                })
                 const { data } = await this.axios.post(`${this.api.url}/admin/signin`, this.loginData);
                 const { token, expired } = data;
+                toast.success('登入成功。', {
+                    autoClose: successDelay,
+                })
                 setTimeout(() => {
                     this.setToken(token, expired);
                     this.$router.push("/backstage");
-                }, delay + 500);
+                }, successDelay + 500);
             } catch (error) {
-                alert(error.response.data.error.message);
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
             }
         },
         ...mapActions(memberStore, ['setToken'])

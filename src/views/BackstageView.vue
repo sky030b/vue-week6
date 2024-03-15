@@ -80,6 +80,9 @@ import ProductsPagination from '@/components/ProductsPagination.vue'
 import modal from 'bootstrap/js/dist/modal'
 import { mapActions } from 'pinia'
 import memberStore from '@/stores/memberData'
+import { toast } from 'vue3-toastify'
+const successDelay = 1500;
+const errorOrWarnDelay = 2000;
 
 let productModal = null;
 let delProductModal = null;
@@ -122,10 +125,14 @@ export default {
                 await this.axios.post(`${this.api.url}/api/user/check`);
                 await this.getAllProducts();
                 await this.getPageProducts(this.pagination.current_page);
-            } catch (err) {
-                alert(`${err.response.data.message}。\n將返回登入頁。`);
+            } catch (error) {
+                toast.error(`${error.response.data.message}。\n將返回登入頁。`, {
+                    autoClose: errorOrWarnDelay,
+                });
                 delete this.axios.defaults.headers.common["Authorization"];
-                this.$router.push("/login");
+                setTimeout(() => {
+                    this.$router.push("/login");
+                }, errorOrWarnDelay + 500)
             }
 
             this.isLoading = false;
@@ -135,9 +142,13 @@ export default {
                 const res = await this.axios.get(`${this.api.url}/api/${this.api.path}/admin/products/all`);
                 this.allProducts = res.data.products;
             } catch (error) {
-                alert(`${error.response.data.message}\n將返回登入頁。`);
+                toast.error(`${error.response.data.message}。\n將返回登入頁。`, {
+                    autoClose: errorOrWarnDelay,
+                });
                 delete this.axios.defaults.headers.common["Authorization"];
-                this.$router.push("/login");
+                setTimeout(() => {
+                    this.$router.push("/login");
+                }, errorOrWarnDelay + 500)
             }
         },
         async getPageProducts(page = 1) {
@@ -146,21 +157,30 @@ export default {
                 this.pageProducts = res.data.products;
                 this.pagination = res.data.pagination;
             } catch (error) {
-                alert(`${error.response.data.message}\n將返回登入頁。`);
+                toast.error(`${error.response.data.message}。\n將返回登入頁。`, {
+                    autoClose: errorOrWarnDelay,
+                });
                 delete this.axios.defaults.headers.common["Authorization"];
-                this.$router.push("/login");
+                setTimeout(() => {
+                    this.$router.push("/login");
+                }, errorOrWarnDelay + 500)
             }
         },
         async deleteProduct() {
             this.isLoading = true;
 
             try {
-                await this.axios.delete(`${this.api.url}/api/${this.api.path}/admin/product/${this.deleteTemp.id}`); alert("刪除成功。");
+                await this.axios.delete(`${this.api.url}/api/${this.api.path}/admin/product/${this.deleteTemp.id}`);
+                toast.success("刪除成功。", {
+                    autoClose: successDelay,
+                });
                 await this.getAllProducts();
                 await this.getPageProducts(this.pagination.current_page);
                 this.handleModalDismiss();
             } catch (error) {
-                alert(error.response.data.message);
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
             }
 
             this.isLoading = false;
@@ -173,9 +193,13 @@ export default {
                 await this.getAllProducts();
                 await this.getPageProducts(this.pagination.current_page);
             } catch (error) {
-                alert(`${error}。\n將返回登入頁。`);
+                toast.error(`${error.response.data.message}。\n將返回登入頁。`, {
+                    autoClose: errorOrWarnDelay,
+                });
                 delete this.axios.defaults.headers.common["Authorization"];
-                this.$router.push("/login");
+                setTimeout(() => {
+                    this.$router.push("/login");
+                }, errorOrWarnDelay + 500)
             }
 
             this.isLoading = false;

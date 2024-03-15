@@ -52,6 +52,9 @@
 
 <script>
 import ProductsPagination from '@/components/ProductsPagination.vue';
+import { toast } from 'vue3-toastify'
+const successDelay = 1500;
+const errorOrWarnDelay = 2000;
 
 export default {
     components: { ProductsPagination },
@@ -83,7 +86,9 @@ export default {
                 const res = await this.axios.get(`${this.api.url}/api/${this.api.path}/products/all`)
                 this.allProducts = res.data.products;
             } catch (error) {
-                alert(error.response.data.message);
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
             }
             this.isLoading = false;
         },
@@ -93,9 +98,10 @@ export default {
                 const res = await this.axios.get(`${this.api.url}/api/${this.api.path}/products?page=${page}`);
                 this.pageProducts = res.data.products;
                 this.pagination = res.data.pagination;
-                console.log(this.pageProducts)
             } catch (error) {
-                alert(error.response.data.message);
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
             }
             this.isLoading = false;
         },
@@ -107,7 +113,9 @@ export default {
                 this.productTemp = res.data.product;
                 this.$refs.userProductModal.openModal();
             } catch (error) {
-                alert(error.response.data.message);
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
             }
             this.loadingStatus.id = '';
             this.isLoading = false;
@@ -124,9 +132,13 @@ export default {
 
             try {
                 const res = await this.axios.post(`${this.api.url}/api/${this.api.path}/cart`, { data: cart });
-                alert(res.data.message);
+                toast.success(res.data.message, {
+                    autoClose: successDelay,
+                });
             } catch (error) {
-                alert(error.response.data.message);
+                toast.error(error.response.data.message, {
+                    autoClose: errorOrWarnDelay,
+                });
             }
 
             this.loadingStatus.id = '';
